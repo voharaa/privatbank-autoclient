@@ -2,12 +2,13 @@
 
 use Voharaa\PrivatbankAutoclient\Client;
 use Voharaa\PrivatbankAutoclient\Responses\Currency\ExchangeRates;
+use Voharaa\PrivatbankAutoclient\Responses\Currency\ExchangeRatesHistory;
 use Voharaa\PrivatbankAutoclient\Tests\Fakes\FakeTransporter;
 
 beforeEach(function () {
     $this->transporter = new FakeTransporter([
-        'proxy/currency/' => apiFixture('currency'),
-        'proxy/currency/history' => apiFixture('currency'),
+        'proxy/currency' => apiFixture('currency'),
+        'proxy/currency/history' => apiFixture('currency-history'),
     ]);
 
     $this->currency = (new Client($this->transporter))->currency();
@@ -16,14 +17,14 @@ beforeEach(function () {
 it('fetches current rates', function () {
     expect($this->currency->rates())->toBeInstanceOf(ExchangeRates::class)
         ->and($this->transporter->lastCall())->toBe([
-            'method' => 'get', 'path' => 'proxy/currency/', 'key' => null, 'query' => [],
+            'method' => 'get', 'path' => 'proxy/currency', 'key' => null, 'query' => [],
         ]);
 });
 
 it('fetches the history with the period in d-m-Y format', function () {
     $rates = $this->currency->history(new DateTimeImmutable('2026-11-01'), new DateTimeImmutable('2026-11-15'));
 
-    expect($rates)->toBeInstanceOf(ExchangeRates::class)
+    expect($rates)->toBeInstanceOf(ExchangeRatesHistory::class)
         ->and($this->transporter->lastCall())->toBe([
             'method' => 'get',
             'path' => 'proxy/currency/history',
@@ -35,7 +36,7 @@ it('fetches the history with the period in d-m-Y format', function () {
 it('allows a single-day history period', function () {
     $day = new DateTimeImmutable('2026-11-01 18:00');
 
-    expect($this->currency->history($day, $day))->toBeInstanceOf(ExchangeRates::class);
+    expect($this->currency->history($day, $day))->toBeInstanceOf(ExchangeRatesHistory::class);
 });
 
 it('rejects a history period longer than 15 days without sending a request', function () {
@@ -53,4 +54,21 @@ it('sends no request for an invalid period', function () {
     }
 
     expect($this->transporter->calls)->toBeEmpty();
+});
+
+it('requests proxy/currency without a trailing slash', function () {
+    $client = new Client(mockTransporter([jsonResponse(apiFixture('currency'))], $history));
+
+    $client->currency()->rates();
+
+    expect((string) $history[0]['request']->getUri())->toBe('https://acp.privatbank.ua/api/proxy/currency');
+});
+
+it('requests the history with the period in the query string', function () {
+    $client = new Client(mockTransporter([jsonResponse(apiFixture('currency-history'))], $history));
+
+    $client->currency()->history(new DateTimeImmutable('2026-11-16'), new DateTimeImmutable('2026-11-17'));
+
+    expect((string) $history[0]['request']->getUri())
+        ->toBe('https://acp.privatbank.ua/api/proxy/currency/history?startDate=16-11-2026&endDate=17-11-2026');
 });

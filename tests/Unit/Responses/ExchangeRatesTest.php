@@ -15,6 +15,14 @@ it('maps cache info', function () {
         ->and($rates->serverTime)->toBe(1526645134001);
 });
 
+it('treats cache_time 0 as not cached', function () {
+    $rates = new ExchangeRates(['cache_info' => ['from_cache' => false, 'cache_time' => 0, 'server_time' => 1794949205330]] + apiFixture('currency'));
+
+    expect($rates->fromCache)->toBeFalse()
+        ->and($rates->cacheTime)->toBeNull()
+        ->and($rates->serverTime)->toBe(1794949205330);
+});
+
 it('maps every currency with its buy and sell rates', function () {
     $rates = new ExchangeRates(apiFixture('currency'));
 
@@ -75,6 +83,14 @@ it('keeps the raw data', function () {
         ->and($rates->get('USD')->raw())->toBe($data['USD'])
         ->and($rates->get('USD')->buy->raw())->toBe($data['USD']['B']);
 });
+
+it('throws TransportException when the response has no currencies', function (array $data) {
+    new ExchangeRates($data);
+})->throws(TransportException::class, 'no currency rates found')->with([
+    'empty' => [[]],
+    'cache info only' => [['cache_info' => ['from_cache' => false, 'cache_time' => 0, 'server_time' => 1]]],
+    'history format' => [apiFixture('currency-history')],
+]);
 
 it('throws TransportException when a rate has no value', function () {
     new ExchangeRates(['USD' => ['B' => ['date' => '18-05-2018 14:00:01']]]);

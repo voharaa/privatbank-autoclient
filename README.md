@@ -176,13 +176,30 @@ $usd->rate(CurrencyRateType::Sell); // same as $usd->sell
 
 $rates->currencies();       // ['USD', 'EUR', ...]
 $rates->fromCache;          // true if the API served cached data
-$rates->cacheTime;          // Unix time in milliseconds
+$rates->cacheTime;          // Unix time in milliseconds, null if not cached
 
 // History for a period of at most 15 days (checked before sending the request)
 $history = $client->currency()->history(new DateTimeImmutable('-7 days'), new DateTimeImmutable('today'));
+
+foreach ($history->forCurrency('USD') as $day) {
+    echo $day->date, ': ', $day->buy, ' / ', $day->sell, ' (NBU ', $day->nbuRate, ')', PHP_EOL;
+}
+
+$history->rates;            // list<HistoricalRate>: one row per currency per day, oldest first
+$history->dates();          // ['11-11-2026', '12-11-2026', ...], days without rates (weekends) are skipped
+$history->forDate(new DateTimeImmutable('2026-11-17')); // all currencies for one day
+$history->currencies();     // ['CHF', 'EUR', 'USD', 'PLZ', ...]
 ```
 
-`ExchangeRates`, `CurrencyRate` and `Rate` also implement `HasRawResponse`.
+The history has a different shape than the current rates: each `HistoricalRate` holds both sides
+(`buy`, `sell`, `buyDelta`, `sellDelta`, `nbuRate`) for one day, and `rate()` / `delta()` take a `CurrencyRateType`.
+Currency codes are kept as the API returns them, which is not always ISO 4217 (the bank sends `PLZ` for the zloty).
+
+> **Note:** the real `proxy/currency/history` response differs from the bank's documentation, which shows the same
+> shape as `proxy/currency`. The API actually returns `data.history`: a list of rows with `date`, `currencyCode`,
+> `nbuRate`, `rate_b`, `rate_b_delta`, `rate_s` and `rate_s_delta`. The library maps this real format (checked on 17.11.2026).
+
+`ExchangeRates`, `ExchangeRatesHistory` and the objects inside them implement `HasRawResponse`.
 
 ### Notes on the data
 
@@ -224,7 +241,7 @@ Because cursors are lazy, these exceptions are thrown while iterating (or in `->
 | `statements/transactions` | `transactions()` |
 | `statements/transactions/interim` | `interimTransactions()` |
 | `statements/transactions/final` | `finalTransactions()` |
-| `proxy/currency/` | `currency()->rates()` |
+| `proxy/currency` | `currency()->rates()` |
 | `proxy/currency/history` | `currency()->history()` |
 
 ### Not supported yet

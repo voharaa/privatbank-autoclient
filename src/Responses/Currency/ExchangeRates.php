@@ -5,27 +5,19 @@ namespace Voharaa\PrivatbankAutoclient\Responses\Currency;
 use Voharaa\PrivatbankAutoclient\Contracts\HasRawResponse;
 use Voharaa\PrivatbankAutoclient\Exceptions\TransportException;
 use Voharaa\PrivatbankAutoclient\Responses\Concerns\InteractsWithRawResponse;
-use Voharaa\PrivatbankAutoclient\Support\Payload;
+use Voharaa\PrivatbankAutoclient\Responses\Concerns\ReadsCacheInfo;
 
 /**
- * Exchange rates returned by proxy/currency and proxy/currency/history.
+ * Current exchange rates returned by proxy/currency.
  *
  * The API returns every currency as a top-level key ("USD", "EUR", ...) next to "cache_info".
  */
 readonly class ExchangeRates implements HasRawResponse
 {
     use InteractsWithRawResponse;
+    use ReadsCacheInfo;
 
     private const string CACHE_INFO = 'cache_info';
-
-    /** Whether the API served the data from its cache. Null if the API did not report it. */
-    public ?bool $fromCache;
-
-    /** When the data was cached, Unix time in milliseconds. */
-    public ?int $cacheTime;
-
-    /** Current server time, Unix time in milliseconds. */
-    public ?int $serverTime;
 
     /** @var array<string, CurrencyRate> Keyed by currency code, e.g. "USD" */
     public array $rates;
@@ -39,10 +31,7 @@ readonly class ExchangeRates implements HasRawResponse
     {
         $this->raw = $data;
 
-        $cacheInfo = isset($data[self::CACHE_INFO]) ? Payload::array($data, self::CACHE_INFO) : [];
-        $this->fromCache = array_key_exists('from_cache', $cacheInfo) ? Payload::bool($cacheInfo, 'from_cache') : null;
-        $this->cacheTime = Payload::optionalInt($cacheInfo, 'cache_time');
-        $this->serverTime = Payload::optionalInt($cacheInfo, 'server_time');
+        [$this->fromCache, $this->cacheTime, $this->serverTime] = self::readCacheInfo($data);
 
         $rates = [];
 
@@ -52,6 +41,10 @@ readonly class ExchangeRates implements HasRawResponse
             }
 
             $rates[(string) $currency] = new CurrencyRate((string) $currency, $value);
+        }
+
+        if ($rates === []) {
+            throw new TransportException('Unexpected response format: no currency rates found');
         }
 
         $this->rates = $rates;

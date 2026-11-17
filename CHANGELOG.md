@@ -22,8 +22,9 @@ First public release.
 - `$raw` on `Transaction`, `Balance` and `Settings`: the row exactly as returned by the API,
   including fields not mapped to properties. Also available as `raw()` through the `HasRawResponse` interface.
 - `currency()->rates()` and `currency()->history()` for PrivatBank exchange rates (buy, sell, NBU rate),
-  with typed `ExchangeRates`, `CurrencyRate` and `Rate` objects and the `CurrencyRateType` enum (buy/sell). `history()` rejects periods longer than 15 days
-  before sending the request.
+  with typed `ExchangeRates` (`CurrencyRate`, `Rate`) and `ExchangeRatesHistory` (`HistoricalRate`) objects
+  and the `CurrencyRateType` enum (buy/sell). `history()` rejects periods longer than 15 days before sending the request.
+  Both are mapped from the responses of the real API, which differ from the bank's docs.
 - `ApiException` (HTTP status, API error code, service code, request ID) and
   `TransportException` (network errors, invalid JSON, unexpected response format).
 - Protection against endless pagination when the API returns a missing or repeated `next_page_id`.
