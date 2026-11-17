@@ -129,7 +129,7 @@ Both rows have the same `instructionKey()` but different `id`s.
 
 ### Raw API data
 
-Every `Transaction`, `Balance` and `Settings` keeps the row exactly as the API returned it in `$raw`,
+Every response object (`Transaction`, `Balance`, `Settings`, `ExchangeRates`, …) keeps the row exactly as the API returned it in `$raw`,
 including fields that have no property of their own. Nothing is converted: empty strings stay `""`,
 while the matching property is `null`.
 
@@ -159,6 +159,30 @@ $client->statements()->finalBalances();       // the last closed day
 $client->statements()->interimTransactions();
 $client->statements()->finalTransactions();
 ```
+
+### Currency rates
+
+```php
+$rates = $client->currency()->rates();
+
+$usd = $rates->get('USD');  // null if the API did not return this currency
+$usd->buy->rate;            // "26.0700000", the bank buys USD at this rate
+$usd->sell->rate;           // "26.3200000", the bank sells USD at this rate
+$usd->buy->delta;           // "-0.0600000", change of the rate
+$usd->buy->nbuRate;         // "26.1888140", official NBU rate
+$usd->buy->date;            // "18-05-2018 14:00:01"
+
+$usd->rate(CurrencyRateType::Sell); // same as $usd->sell
+
+$rates->currencies();       // ['USD', 'EUR', ...]
+$rates->fromCache;          // true if the API served cached data
+$rates->cacheTime;          // Unix time in milliseconds
+
+// History for a period of at most 15 days (checked before sending the request)
+$history = $client->currency()->history(new DateTimeImmutable('-7 days'), new DateTimeImmutable('today'));
+```
+
+`ExchangeRates`, `CurrencyRate` and `Rate` also implement `HasRawResponse`.
 
 ### Notes on the data
 
@@ -200,11 +224,12 @@ Because cursors are lazy, these exceptions are thrown while iterating (or in `->
 | `statements/transactions` | `transactions()` |
 | `statements/transactions/interim` | `interimTransactions()` |
 | `statements/transactions/final` | `finalTransactions()` |
+| `proxy/currency/` | `currency()->rates()` |
+| `proxy/currency/history` | `currency()->history()` |
 
 ### Not supported yet
 
 - Group mode (`?id=` for groups of sole proprietors)
-- Currency rates
 - Payments: creating, signing, deleting, SWIFT and other currency payments
 - Electronic document management (EDO, invoices, tax invoices)
 - Electronic reporting

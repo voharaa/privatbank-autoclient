@@ -67,6 +67,12 @@ describe('get()', function () {
         $transporter->get('statements/settings');
     })->throws(ApiException::class, 'Something went wrong');
 
+    it('accepts a successful response without a status field', function () {
+        $transporter = mockTransporter([jsonResponse(apiFixture('currency'))]);
+
+        expect($transporter->get('proxy/currency/'))->toBe(apiFixture('currency'));
+    });
+
     it('throws ApiException with the HTTP status when the error body is not JSON', function (int $status) {
         $transporter = mockTransporter([new Response($status, [], '<html>Bad Gateway</html>')]);
 

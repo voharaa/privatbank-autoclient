@@ -81,6 +81,25 @@ final class Payload
     }
 
     /**
+     * Null when the field is missing or null. Accepts integers and numeric strings.
+     *
+     * @param  array<mixed>  $data
+     *
+     * @throws TransportException
+     */
+    public static function optionalInt(array $data, string $key): ?int
+    {
+        $value = $data[$key] ?? null;
+
+        return match (true) {
+            $value === null => null,
+            is_int($value) => $value,
+            is_string($value) && preg_match('/^-?\d+$/', $value) === 1 => (int) $value,
+            default => throw new TransportException("Unexpected response format: field \"{$key}\" is not an integer"),
+        };
+    }
+
+    /**
      * Accepts real booleans and "true"/"false" strings. False when missing.
      *
      * @param  array<mixed>  $data

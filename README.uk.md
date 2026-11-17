@@ -130,7 +130,7 @@ foreach ($transactions as $tx) {
 
 ### Сирі дані API
 
-`Transaction`, `Balance` і `Settings` зберігають рядок рівно в тому вигляді, як його повернув API, у `$raw`,
+Усі об’єкти відповідей (`Transaction`, `Balance`, `Settings`, `ExchangeRates`, …) зберігають рядок рівно в тому вигляді, як його повернув API, у `$raw`,
 разом із полями, для яких немає окремої властивості. Нічого не перетворюється: порожні рядки лишаються `""`,
 тоді як відповідна властивість дорівнює `null`.
 
@@ -160,6 +160,30 @@ $client->statements()->finalBalances();       // за останній закр�
 $client->statements()->interimTransactions();
 $client->statements()->finalTransactions();
 ```
+
+### Курси валют
+
+```php
+$rates = $client->currency()->rates();
+
+$usd = $rates->get('USD');  // null, якщо API не повернув цю валюту
+$usd->buy->rate;            // "26.0700000", курс купівлі банком
+$usd->sell->rate;           // "26.3200000", курс продажу банком
+$usd->buy->delta;           // "-0.0600000", зміна курсу
+$usd->buy->nbuRate;         // "26.1888140", курс НБУ
+$usd->buy->date;            // "18-05-2018 14:00:01"
+
+$usd->rate(CurrencyRateType::Sell); // те саме, що $usd->sell
+
+$rates->currencies();       // ['USD', 'EUR', ...]
+$rates->fromCache;          // true, якщо API віддав дані з кешу
+$rates->cacheTime;          // час кешування, Unix-час у мілісекундах
+
+// Історія за період не довший за 15 днів (перевіряється до надсилання запиту)
+$history = $client->currency()->history(new DateTimeImmutable('-7 days'), new DateTimeImmutable('today'));
+```
+
+`ExchangeRates`, `CurrencyRate` і `Rate` теж реалізують `HasRawResponse`.
 
 ### Особливості даних
 
@@ -201,11 +225,12 @@ try {
 | `statements/transactions` | `transactions()` |
 | `statements/transactions/interim` | `interimTransactions()` |
 | `statements/transactions/final` | `finalTransactions()` |
+| `proxy/currency/` | `currency()->rates()` |
+| `proxy/currency/history` | `currency()->history()` |
 
 ### Поки не підтримується
 
 - Режим групи ПП (`?id=`)
-- Курси валют
 - Платежі: створення, підписання, видалення, SWIFT та інші валютні платежі
 - Електронний документообіг (ЕДО, рахунки-фактури, податкові накладні)
 - Електронна звітність

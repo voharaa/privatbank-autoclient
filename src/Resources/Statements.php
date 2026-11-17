@@ -4,12 +4,20 @@ namespace Voharaa\PrivatbankAutoclient\Resources;
 
 use DateTimeInterface;
 use Generator;
+use Voharaa\PrivatbankAutoclient\Exceptions\ApiException;
+use Voharaa\PrivatbankAutoclient\Exceptions\TransportException;
 use Voharaa\PrivatbankAutoclient\Responses\Statements\Balance;
 use Voharaa\PrivatbankAutoclient\Responses\Statements\Settings;
 use Voharaa\PrivatbankAutoclient\Responses\Statements\Transaction;
 use Voharaa\PrivatbankAutoclient\Support\Cursor;
 use Voharaa\PrivatbankAutoclient\Support\Payload;
 
+/**
+ * Account balances and transactions.
+ *
+ * Methods that return a Cursor send no request when called: ApiException and TransportException
+ * are thrown while iterating the cursor (or in Cursor::all()), so they have no @throws tags.
+ */
 class Statements
 {
     use Concerns\Transportable;
@@ -21,6 +29,10 @@ class Statements
     /** The interim endpoints accept at most 100 records per page. */
     private const int INTERIM_MAX_LIMIT = 100;
 
+    /**
+     * @throws ApiException
+     * @throws TransportException
+     */
     public function settings(): Settings
     {
         $response = $this->transporter->get(self::PREFIX.'/settings');
