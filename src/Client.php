@@ -9,6 +9,7 @@ use Psr\Http\Message\RequestFactoryInterface;
 use SensitiveParameter;
 use Voharaa\PrivatbankAutoclient\Contracts\ClientContract;
 use Voharaa\PrivatbankAutoclient\Contracts\TransporterContract;
+use Voharaa\PrivatbankAutoclient\Resources\Currency;
 use Voharaa\PrivatbankAutoclient\Resources\Statements;
 
 final class Client implements ClientContract
@@ -32,5 +33,10 @@ final class Client implements ClientContract
     public function statements(): Statements
     {
         return new Statements($this->transporter);
+    }
+
+    public function currency(): Currency
+    {
+        return new Currency($this->transporter);
     }
 }

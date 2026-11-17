@@ -5,7 +5,7 @@ namespace Voharaa\PrivatbankAutoclient\Exceptions;
 use Exception;
 
 /**
- * Thrown when the API responds with an error (HTTP status >= 400 or "status" !== "SUCCESS").
+ * Thrown when the API responds with an error (HTTP status >= 400, or a "status" field other than "SUCCESS").
  *
  * getCode() returns the HTTP status code. The API's own error codes are exposed separately,
  * because they are strings (e.g. "VE005", "PMTSRV0112") and cannot be stored as Exception codes.

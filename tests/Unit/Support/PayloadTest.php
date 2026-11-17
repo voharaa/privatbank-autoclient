@@ -37,3 +37,15 @@ it('reads a list of strings', function () {
 it('throws when a list contains something other than strings', function () {
     Payload::stringList(['a' => ['x', ['y']]], 'a');
 })->throws(TransportException::class);
+
+describe('optionalInt()', function () {
+    it('reads integers and numeric strings', function () {
+        expect(Payload::optionalInt(['a' => 5], 'a'))->toBe(5)
+            ->and(Payload::optionalInt(['a' => '1526645093874'], 'a'))->toBe(1526645093874)
+            ->and(Payload::optionalInt([], 'a'))->toBeNull();
+    });
+
+    it('throws on a non-integer value', function () {
+        Payload::optionalInt(['a' => '1.5'], 'a');
+    })->throws(TransportException::class, 'field "a" is not an integer');
+});

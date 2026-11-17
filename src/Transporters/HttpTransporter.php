@@ -61,7 +61,9 @@ class HttpTransporter implements TransporterContract
             throw new TransportException('Response body is not a JSON object');
         }
 
-        if ($statusCode >= 400 || ($data['status'] ?? null) !== 'SUCCESS') {
+        // Some endpoints (e.g. proxy/currency) return no "status" field at all,
+        // so only an explicit non-SUCCESS status is treated as an error.
+        if ($statusCode >= 400 || (array_key_exists('status', $data) && $data['status'] !== 'SUCCESS')) {
             throw ApiException::fromResponse($statusCode, $data);
         }
 
