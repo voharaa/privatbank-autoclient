@@ -19,6 +19,8 @@ First public release.
 - Typed `Balance` and `Transaction` objects with readable property names.
 - `Balance::$date`: the day a balance row is for (the API returns one row per account per day).
 - `Transaction::instructionKey()` (REF + REFN) and `Transaction::$id` for telling rows apart.
+- `$raw` on `Transaction`, `Balance` and `Settings`: the row exactly as returned by the API,
+  including fields not mapped to properties. Also available as `raw()` through the `HasRawResponse` interface.
 - `ApiException` (HTTP status, API error code, service code, request ID) and
   `TransportException` (network errors, invalid JSON, unexpected response format).
 - Protection against endless pagination when the API returns a missing or repeated `next_page_id`.

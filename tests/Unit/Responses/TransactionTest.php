@@ -1,5 +1,6 @@
 <?php
 
+use Voharaa\PrivatbankAutoclient\Contracts\HasRawResponse;
 use Voharaa\PrivatbankAutoclient\Enums\TransactionDirection;
 use Voharaa\PrivatbankAutoclient\Enums\TransactionStatus;
 use Voharaa\PrivatbankAutoclient\Exceptions\TransportException;
@@ -132,4 +133,30 @@ it('shares the instruction key between both sides of a transfer between own acco
 
     expect($debit->instructionKey())->toBe($credit->instructionKey())
         ->and($debit->id)->not->toBe($credit->id);
+});
+
+it('keeps the row exactly as returned by the API in raw', function () {
+    $row = [...firstItem('transactions'), 'NEW_FIELD' => 'value'];
+    $transaction = new Transaction($row);
+
+    expect($transaction->raw)->toBe($row)
+        ->and($transaction->raw)->toHaveKeys(['SUM_E', 'DOC_TYP', 'ULTMT', 'NEW_FIELD'])
+        ->and($transaction->raw['NEW_FIELD'])->toBe('value');
+});
+
+it('keeps empty strings in raw while the property is null', function () {
+    $transaction = new Transaction([...firstItem('transactions'), 'DOC_TYP' => '']);
+
+    expect($transaction->raw['DOC_TYP'])->toBe('')
+        ->and($transaction->documentType)->toBeNull()
+        ->and($transaction->raw['PAYER_ULTMT_NAME'])->toBe('')
+        ->and($transaction->ultimatePayerName)->toBeNull();
+});
+
+it('implements HasRawResponse', function () {
+    $row = firstItem('transactions');
+    $transaction = new Transaction($row);
+
+    expect($transaction)->toBeInstanceOf(HasRawResponse::class)
+        ->and($transaction->raw())->toBe($row);
 });

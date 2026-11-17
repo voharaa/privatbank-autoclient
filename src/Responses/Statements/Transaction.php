@@ -2,9 +2,11 @@
 
 namespace Voharaa\PrivatbankAutoclient\Responses\Statements;
 
+use Voharaa\PrivatbankAutoclient\Contracts\HasRawResponse;
 use Voharaa\PrivatbankAutoclient\Enums\TransactionDirection;
 use Voharaa\PrivatbankAutoclient\Enums\TransactionStatus;
 use Voharaa\PrivatbankAutoclient\Exceptions\TransportException;
+use Voharaa\PrivatbankAutoclient\Responses\Concerns\InteractsWithRawResponse;
 use Voharaa\PrivatbankAutoclient\Support\Payload;
 
 /**
@@ -15,8 +17,10 @@ use Voharaa\PrivatbankAutoclient\Support\Payload;
  * who paid whom. Amounts are kept as strings to preserve precision; dates are raw strings
  * as returned by the API (local Kyiv time).
  */
-readonly class Transaction
+readonly class Transaction implements HasRawResponse
 {
+    use InteractsWithRawResponse;
+
     /** Transaction ID. Unique per statement row; use it to deduplicate rows. */
     public string $id;
 
@@ -133,6 +137,7 @@ readonly class Transaction
      */
     public function __construct(array $data)
     {
+        $this->raw = $data;
         $this->id = Payload::string($data, 'ID');
         $this->technicalId = Payload::nonBlankString($data, 'TECHNICAL_TRANSACTION_ID');
         $this->reference = Payload::string($data, 'REF');

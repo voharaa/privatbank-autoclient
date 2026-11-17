@@ -2,7 +2,9 @@
 
 namespace Voharaa\PrivatbankAutoclient\Responses\Statements;
 
+use Voharaa\PrivatbankAutoclient\Contracts\HasRawResponse;
 use Voharaa\PrivatbankAutoclient\Exceptions\TransportException;
+use Voharaa\PrivatbankAutoclient\Responses\Concerns\InteractsWithRawResponse;
 use Voharaa\PrivatbankAutoclient\Support\Payload;
 
 /**
@@ -12,8 +14,10 @@ use Voharaa\PrivatbankAutoclient\Support\Payload;
  * Amounts are kept as strings to preserve precision.
  * Dates are raw strings as returned by the API, in "d.m.Y H:i:s" format (local Kyiv time).
  */
-readonly class Balance
+readonly class Balance implements HasRawResponse
 {
+    use InteractsWithRawResponse;
+
     /** The API uses this date for accounts that have not been closed. */
     private const string NOT_CLOSED_DATE = '01.01.1900 00:00:00';
 
@@ -81,6 +85,7 @@ readonly class Balance
      */
     public function __construct(array $data)
     {
+        $this->raw = $data;
         $this->account = Payload::string($data, 'acc');
         $this->currency = Payload::string($data, 'currency');
         $this->openingBalance = Payload::string($data, 'balanceIn');

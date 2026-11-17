@@ -1,5 +1,6 @@
 <?php
 
+use Voharaa\PrivatbankAutoclient\Contracts\HasRawResponse;
 use Voharaa\PrivatbankAutoclient\Enums\WorkBalance;
 use Voharaa\PrivatbankAutoclient\Exceptions\TransportException;
 use Voharaa\PrivatbankAutoclient\Responses\Statements\Settings;
@@ -29,3 +30,17 @@ it('reports whether the API is available', function (string $phase, string $work
 it('reports an unknown work_balance as a TransportException', function () {
     new Settings([...apiFixture('settings')['settings'], 'work_balance' => 'X']);
 })->throws(TransportException::class, 'unknown value "X" in field "work_balance"');
+
+it('keeps the settings object exactly as returned by the API in raw', function () {
+    $data = [...apiFixture('settings')['settings'], 'new_field' => 'value'];
+
+    expect((new Settings($data))->raw)->toBe($data);
+});
+
+it('implements HasRawResponse', function () {
+    $data = apiFixture('settings')['settings'];
+    $settings = new Settings($data);
+
+    expect($settings)->toBeInstanceOf(HasRawResponse::class)
+        ->and($settings->raw())->toBe($data);
+});

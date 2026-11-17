@@ -2,15 +2,19 @@
 
 namespace Voharaa\PrivatbankAutoclient\Responses\Statements;
 
+use Voharaa\PrivatbankAutoclient\Contracts\HasRawResponse;
 use Voharaa\PrivatbankAutoclient\Enums\WorkBalance;
 use Voharaa\PrivatbankAutoclient\Exceptions\TransportException;
+use Voharaa\PrivatbankAutoclient\Responses\Concerns\InteractsWithRawResponse;
 use Voharaa\PrivatbankAutoclient\Support\Payload;
 
 /**
  * Server dates and status returned by statements/settings.
  */
-readonly class Settings
+readonly class Settings implements HasRawResponse
 {
+    use InteractsWithRawResponse;
+
     private const string WORKING_PHASE = 'WRK';
 
     public string $phase;
@@ -35,6 +39,7 @@ readonly class Settings
      */
     public function __construct(array $data)
     {
+        $this->raw = $data;
         $this->phase = Payload::string($data, 'phase');
         $this->datesWithoutOperDay = Payload::stringList($data, 'dates_without_oper_day');
         $this->today = Payload::string($data, 'today');

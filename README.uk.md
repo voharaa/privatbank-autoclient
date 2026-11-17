@@ -128,6 +128,30 @@ foreach ($transactions as $tx) {
 Переказ між двома вашими рахунками з'являється у виписці **двічі**: як дебет на одному рахунку і як кредит на іншому.
 В обох рядків однаковий `instructionKey()`, але різні `id`.
 
+### Сирі дані API
+
+`Transaction`, `Balance` і `Settings` зберігають рядок рівно в тому вигляді, як його повернув API, у `$raw`,
+разом із полями, для яких немає окремої властивості. Нічого не перетворюється: порожні рядки лишаються `""`,
+тоді як відповідна властивість дорівнює `null`.
+
+```php
+$tx->raw;               // ['ID' => '557091731', 'REF' => 'DNCHK0108B1WKX', 'SUM_E' => '0.01', ...]
+$tx->raw['TRANTYPE'];   // "C"
+
+json_encode($tx->raw);  // наприклад, щоб зберегти оригінальний рядок у БД
+```
+
+Усі вони реалізують `HasRawResponse`, тож будь-який об'єкт відповіді можна обробляти однаково:
+
+```php
+use Voharaa\PrivatbankAutoclient\Contracts\HasRawResponse;
+
+function storeRaw(HasRawResponse $response): void
+{
+    DB::table('bank_rows')->insert(['payload' => json_encode($response->raw())]);
+}
+```
+
 ### Проміжна й підсумкова виписка
 
 ```php

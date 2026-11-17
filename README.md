@@ -127,6 +127,30 @@ foreach ($transactions as $tx) {
 A transfer between two of your own accounts appears **twice**: as a debit on one account and a credit on the other.
 Both rows have the same `instructionKey()` but different `id`s.
 
+### Raw API data
+
+Every `Transaction`, `Balance` and `Settings` keeps the row exactly as the API returned it in `$raw`,
+including fields that have no property of their own. Nothing is converted: empty strings stay `""`,
+while the matching property is `null`.
+
+```php
+$tx->raw;               // ['ID' => '557091731', 'REF' => 'DNCHK0108B1WKX', 'SUM_E' => '0.01', ...]
+$tx->raw['TRANTYPE'];   // "C"
+
+json_encode($tx->raw);  // e.g. to store the original row in a database
+```
+
+All of them implement `HasRawResponse`, so you can handle any response object the same way:
+
+```php
+use Voharaa\PrivatbankAutoclient\Contracts\HasRawResponse;
+
+function storeRaw(HasRawResponse $response): void
+{
+    DB::table('bank_rows')->insert(['payload' => json_encode($response->raw())]);
+}
+```
+
 ### Interim and final statements
 
 ```php

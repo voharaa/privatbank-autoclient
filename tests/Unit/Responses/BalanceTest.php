@@ -1,5 +1,6 @@
 <?php
 
+use Voharaa\PrivatbankAutoclient\Contracts\HasRawResponse;
 use Voharaa\PrivatbankAutoclient\Exceptions\TransportException;
 use Voharaa\PrivatbankAutoclient\Responses\Statements\Balance;
 
@@ -80,3 +81,28 @@ it('requires the date of the balance row', function () {
 
     new Balance($row);
 })->throws(TransportException::class, 'missing field "dpd"');
+
+it('keeps the row exactly as returned by the API in raw', function () {
+    $row = [...firstItem('balances'), 'newField' => 'value'];
+    $balance = new Balance($row);
+
+    expect($balance->raw)->toBe($row)
+        ->and($balance->raw['newField'])->toBe('value');
+});
+
+it('keeps blank and placeholder values in raw while the property is null', function () {
+    $balance = new Balance([...firstItem('balances'), 'bgfIBrnm' => '']);
+
+    expect($balance->raw['bgfIBrnm'])->toBe('')
+        ->and($balance->attractingBranch)->toBeNull()
+        ->and($balance->raw['date_close_acc'])->toBe('01.01.1900 00:00:00')
+        ->and($balance->closedAt)->toBeNull();
+});
+
+it('implements HasRawResponse', function () {
+    $row = firstItem('balances');
+    $balance = new Balance($row);
+
+    expect($balance)->toBeInstanceOf(HasRawResponse::class)
+        ->and($balance->raw())->toBe($row);
+});
