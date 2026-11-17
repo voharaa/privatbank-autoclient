@@ -1,0 +1,30 @@
+{
+    "status": "SUCCESS",
+    "type": "balances",
+    "exist_next_page": false,
+    "balances": [
+        {
+            "acc": "UA943052990000026100050001037",
+            "currency": "UAH",
+            "balanceIn": "100.50",
+            "balanceInEq": "100.50",
+            "balanceOut": "250.75",
+            "balanceOutEq": "250.75",
+            "turnoverDebt": "49.75",
+            "turnoverDebtEq": "49.75",
+            "turnoverCred": "200.00",
+            "turnoverCredEq": "200.00",
+            "bgfIBrnm": " ",
+            "brnm": "DNH0",
+            "dpd": "09.03.2020 00:00:00",
+            "nameACC": "Програмiсти та Ko МСБ-ТЕСТ ТОВ",
+            "state": "l",
+            "atp": "D",
+            "flmn": "DN",
+            "date_open_acc_reg": "28.12.2016 00:00:00",
+            "date_open_acc_sys": "28.12.2016 00:00:00",
+            "date_close_acc": "01.01.1900 00:00:00",
+            "is_final_bal": true
+        }
+    ]
+}

@@ -1,0 +1,119 @@
+name: API docs watcher
+
+# Once a day, compares the bank's published API documentation with the snapshot on the default branch.
+# When it changed, opens (or updates) a single pull request with the new snapshot. Nothing is pushed to main.
+#
+# Setup:
+#   1. Settings → Secrets and variables → Actions → Variables → add PRIVATBANK_DOCS_URL
+#      (the published Google Docs URL of "Опис API для взаємодії з серверною частиною Автоклієнта").
+#   2. Settings → Actions → General → Workflow permissions →
+#      enable "Allow GitHub Actions to create and approve pull requests".
+
+on:
+  schedule:
+    - cron: '17 6 * * *' # every day at 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write       # push the update branch (never the default branch)
+  pull-requests: write  # open, update and close the pull request
+
+concurrency:
+  group: api-docs
+  cancel-in-progress: false
+
+env:
+  SNAPSHOT: .github/api-docs/privatbank-api.txt
+  BRANCH: api-docs/update
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Download the documentation
+        env:
+          DOCS_URL: ${{ vars.PRIVATBANK_DOCS_URL }}
+        run: |
+          if [ -z "$DOCS_URL" ]; then
+            echo "::error::Repository variable PRIVATBANK_DOCS_URL is not set"
+            exit 1
+          fi
+          php .github/scripts/snapshot-api-docs.php "$DOCS_URL" "$SNAPSHOT"
+
+      - name: Detect changes against the default branch
+        id: diff
+        run: |
+          git add --intent-to-add "$SNAPSHOT"
+          if git diff --quiet -- "$SNAPSHOT"; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No changes in the documentation."
+            exit 0
+          fi
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          if git cat-file -e "HEAD:$SNAPSHOT" 2>/dev/null; then
+            echo "first=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "first=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open or update the pull request
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DOCS_URL: ${{ vars.PRIVATBANK_DOCS_URL }}
+          FIRST: ${{ steps.diff.outputs.first }}
+          BASE: ${{ github.event.repository.default_branch }}
+        run: |
+          if [ "$FIRST" = "true" ]; then
+            title="Add API documentation snapshot"
+            intro="First snapshot of the PrivatBank Autoclient API documentation. Merge it to start tracking changes."
+          else
+            title="API documentation changed"
+            intro="The PrivatBank Autoclient API documentation has changed. Check whether it affects the supported endpoints (\`statements/*\`) and update the code, README and CHANGELOG in this PR or a follow-up if needed."
+          fi
+
+          # Always rebuild the branch from the default branch, so the PR shows only the latest docs change.
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add "$SNAPSHOT"
+          git commit -m "$title ($(date -u +%Y-%m-%d))"
+          git push --force origin "$BRANCH"
+
+          {
+            echo "$intro"
+            echo
+            echo "Documentation: $DOCS_URL"
+            echo
+            echo "Updated: $(date -u '+%Y-%m-%d %H:%M UTC'). See **Files changed** for the diff."
+          } > pr.md
+
+          gh label create api-docs --color 0E8A16 --description "Changes in the bank's API documentation" --force
+
+          pr=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')
+          if [ -n "$pr" ]; then
+            gh pr edit "$pr" --title "$title" --body-file pr.md
+            echo "Updated pull request #$pr"
+          else
+            gh pr create --base "$BASE" --head "$BRANCH" --title "$title" --body-file pr.md --label api-docs
+          fi
+
+      - name: Close a stale pull request
+        if: steps.diff.outputs.changed == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The docs match the default branch again (e.g. the bank reverted a change): the open PR is no longer needed.
+          pr=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')
+          if [ -n "$pr" ]; then
+            gh pr close "$pr" --delete-branch --comment "The documentation matches the default branch again, closing."
+          fi

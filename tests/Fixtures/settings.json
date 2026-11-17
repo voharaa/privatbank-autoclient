@@ -1,0 +1,17 @@
+{
+    "status": "SUCCESS",
+    "type": "settings",
+    "settings": {
+        "phase": "WRK",
+        "dates_without_oper_day": [
+            "01.01.2018 00:00:00",
+            "30.12.2018 00:00:00",
+            "31.12.2018 00:00:00"
+        ],
+        "today": "30.03.2020 00:00:00",
+        "lastday": "29.03.2020 00:00:00",
+        "work_balance": "N",
+        "server_date_time": "30.03.2020 12:03:51",
+        "date_final_statement": "28.03.2020 00:00:00"
+    }
+}

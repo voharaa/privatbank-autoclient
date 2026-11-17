@@ -1,0 +1,66 @@
+{
+    "name": "voharaa/privatbank-autoclient",
+    "description": "Unofficial PHP client for the PrivatBank Autoclient API (Privat24 for Business): account balances and statements.",
+    "homepage": "https://github.com/voharaa/privatbank-autoclient",
+    "support": {
+        "issues": "https://github.com/voharaa/privatbank-autoclient/issues",
+        "source": "https://github.com/voharaa/privatbank-autoclient"
+    },
+    "type": "library",
+    "keywords": [
+        "privatbank",
+        "privat24",
+        "autoclient",
+        "bank",
+        "api",
+        "ukraine",
+        "psr-18",
+        "bank-statements"
+    ],
+    "require": {
+        "php": "^8.3",
+        "php-http/discovery": "^1.20",
+        "psr/http-client": "^1.0",
+        "psr/http-client-implementation": "^1.0",
+        "psr/http-factory": "^1.1",
+        "psr/http-factory-implementation": "^1.0"
+    },
+    "require-dev": {
+        "guzzlehttp/guzzle": "^8.5",
+        "laravel/pint": "^1.32",
+        "pestphp/pest": "^4.7",
+        "phpstan/phpstan": "^2.3",
+        "symfony/var-dumper": "^7.4"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Voharaa\\PrivatbankAutoclient\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Voharaa\\PrivatbankAutoclient\\Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Vohar Andrii",
+            "email": "andrijvohar@gmail.com"
+        }
+    ],
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": false
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": "pest",
+        "analyse": "phpstan analyse",
+        "lint": "pint --test",
+        "format": "pint"
+    },
+    "minimum-stability": "stable"
+}
