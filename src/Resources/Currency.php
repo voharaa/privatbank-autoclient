@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Voharaa\PrivatbankAutoclient\Exceptions\ApiException;
 use Voharaa\PrivatbankAutoclient\Exceptions\TransportException;
 use Voharaa\PrivatbankAutoclient\Responses\Currency\ExchangeRates;
+use Voharaa\PrivatbankAutoclient\Responses\Currency\ExchangeRatesHistory;
 
 class Currency
 {
@@ -28,17 +29,17 @@ class Currency
      */
     public function rates(): ExchangeRates
     {
-        return new ExchangeRates($this->transporter->get(self::PREFIX.'/'));
+        return new ExchangeRates($this->transporter->get(self::PREFIX));
     }
 
     /**
-     * Exchange rates history for a period of at most 15 days.
+     * Exchange rates history for a period of at most 15 days: one row per currency per day.
      *
      * @throws InvalidArgumentException when $endDate is before $startDate or the period is longer than 15 days
      * @throws ApiException
      * @throws TransportException
      */
-    public function history(DateTimeInterface $startDate, DateTimeInterface $endDate): ExchangeRates
+    public function history(DateTimeInterface $startDate, DateTimeInterface $endDate): ExchangeRatesHistory
     {
         $start = DateTimeImmutable::createFromInterface($startDate)->setTime(0, 0);
         $end = DateTimeImmutable::createFromInterface($endDate)->setTime(0, 0);
@@ -55,7 +56,7 @@ class Currency
             );
         }
 
-        return new ExchangeRates($this->transporter->get(self::PREFIX.'/history', [
+        return new ExchangeRatesHistory($this->transporter->get(self::PREFIX.'/history', [
             'startDate' => $startDate->format(self::DATE_FORMAT),
             'endDate' => $endDate->format(self::DATE_FORMAT),
         ]));

@@ -70,7 +70,7 @@ describe('get()', function () {
     it('accepts a successful response without a status field', function () {
         $transporter = mockTransporter([jsonResponse(apiFixture('currency'))]);
 
-        expect($transporter->get('proxy/currency/'))->toBe(apiFixture('currency'));
+        expect($transporter->get('proxy/currency'))->toBe(apiFixture('currency'));
     });
 
     it('throws ApiException with the HTTP status when the error body is not JSON', function (int $status) {

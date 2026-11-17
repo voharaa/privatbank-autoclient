@@ -1,0 +1,21 @@
+{
+    "cache_info": {
+        "from_cache": false,
+        "cache_time": 0,
+        "server_time": 1794949201268
+    },
+    "data": {
+        "sessionState": null,
+        "history": [
+            {"date": "13-11-2026", "currencyCode": "EUR", "nbuRate": "50.3379000", "rate_s": "50.5200000", "rate_s_delta": "-0.1600000", "rate_b": "50.0100000", "rate_b_delta": "-0.1600000"},
+            {"date": "13-11-2026", "currencyCode": "USD", "nbuRate": "45.3849000", "rate_s": "45.6300000", "rate_s_delta": "-0.0200000", "rate_b": "45.2300000", "rate_b_delta": "-0.0200000"},
+            {"date": "13-11-2026", "currencyCode": "PLZ", "nbuRate": "11.4334000", "rate_s": "11.5390000", "rate_s_delta": "-0.0360000", "rate_b": "11.2890000", "rate_b_delta": "-0.0360000"},
+            {"date": "11-11-2026", "currencyCode": "EUR", "nbuRate": "51.0795000", "rate_s": "50.8100000", "rate_s_delta": "-0.4700000", "rate_b": "50.3000000", "rate_b_delta": "-0.4700000"},
+            {"date": "11-11-2026", "currencyCode": "USD", "nbuRate": "45.5013000", "rate_s": "45.5500000", "rate_s_delta": "-0.1200000", "rate_b": "45.1500000", "rate_b_delta": "0.0000000"},
+            {"date": "11-11-2026", "currencyCode": "PLZ", "nbuRate": "11.6395000", "rate_s": "11.6670000", "rate_s_delta": "-0.0830000", "rate_b": "11.4170000", "rate_b_delta": "-0.0830000"},
+            {"date": "17-11-2026", "currencyCode": "EUR", "nbuRate": "49.9881000", "rate_s": "50.1200000", "rate_s_delta": "-0.2200000", "rate_b": "49.6100000", "rate_b_delta": "-0.2200000"},
+            {"date": "17-11-2026", "currencyCode": "USD", "nbuRate": "45.3918000", "rate_s": "45.5500000", "rate_s_delta": "-0.1000000", "rate_b": "45.1500000", "rate_b_delta": "-0.1000000"},
+            {"date": "17-11-2026", "currencyCode": "PLZ", "nbuRate": "11.3490000", "rate_s": "11.4940000", "rate_s_delta": "-0.0030000", "rate_b": "11.2440000", "rate_b_delta": "-0.0030000"}
+        ]
+    }
+}
